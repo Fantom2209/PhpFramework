@@ -2,25 +2,33 @@
 	namespace app\core;
 	
 	class Application{
-		
+
+	    private static $controller;
+	    private static $action;
+
 		public static function run(){
-			$elementURI = explode('/',$_GET['route']);
-			$controllerName = !empty($elementURI[0]) ? $elementURI[0] : 'Home';
-			$controllerNameFull = '\app\lib\\'. $controllerName;
-			$action = !empty($elementURI[1]) ? $elementURI[1] : 'Index';	
-			$controller = new $controllerNameFull;
+			self::Init();
+
+		    $controllerFull = '\app\lib\\'. self::$controller;
+			$controller = new $controllerFull;
 			
 			if(strtolower($_SERVER['REQUEST_METHOD']) == 'post'){
-				$action .= 'Post';
+				self::$action .= 'Post';
 				$controller->SetParams(self::PostParam());
-				$controller->$action();
+				$controller->{self::$action}();
 			}
 			else{
 				$controller->SetParams(self::GetParam());
-				$controller->$action();			
-				$controller->show($controllerName, $action);
+				$controller->{self::$action}();
+				$controller->show(self::$controller, self::$action);
 			}
 		}
+
+		private static function Init(){
+            $elementURI = explode('/',$_GET['route']);
+            self::$controller = !empty($elementURI[0]) ? $elementURI[0] : 'Home';
+            self::$action = !empty($elementURI[1]) ? $elementURI[1] : 'Index';
+        }
 		
 		private static function GetParam(){
 			$elementURI = explode('/', $_GET['route']);
